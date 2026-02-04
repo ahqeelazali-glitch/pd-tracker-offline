@@ -2,50 +2,199 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
   <title>Parkinson’s Tracker</title>
+
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#111111" />
+  <meta name="theme-color" content="#0B1220" />
+
+  <!-- iOS niceties (safe even on Android) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <style>
-    body { font-family: system-ui, Arial; margin: 16px; background: #0b0b0b; color: #f2f2f2; }
-    .card { background:#151515; border:1px solid #2a2a2a; border-radius:14px; padding:14px; margin:12px 0; }
-    input, textarea, button { width:100%; padding:12px; border-radius:12px; border:1px solid #333; background:#0f0f0f; color:#f2f2f2; }
-    button { cursor:pointer; background:#1f1f1f; }
-    button:hover { background:#2a2a2a; }
-    .row { display:flex; gap:10px; }
-    .row > * { flex:1; }
-    .muted { color:#b8b8b8; font-size: 12px; }
-    .entry { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-    .entry button { width:auto; padding:10px 12px; }
-    .pill { display:inline-block; padding:4px 10px; border:1px solid #333; border-radius:999px; font-size:12px; color:#d9d9d9; }
+    :root{
+      --bg:#0B1220;
+      --card:#111A2E;
+      --card2:#0F1730;
+      --line:rgba(255,255,255,.10);
+      --text:#EAF0FF;
+      --muted:rgba(234,240,255,.70);
+      --accent:#5EEAD4;
+      --danger:#FB7185;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(94,234,212,.18), transparent 55%),
+                  radial-gradient(900px 700px at 100% 0%, rgba(56,189,248,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding: 18px 16px 90px;
+    }
+    .topbar{
+      position: sticky;
+      top: 0;
+      padding: 12px 0 12px;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.65), transparent);
+      z-index: 10;
+    }
+    .title{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: .2px;
+    }
+    .badge{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+    }
+    .grid{ display:grid; gap:14px; }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .label{ font-size:12px; color: var(--muted); margin: 4px 0 8px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .row > *{ flex:1 1 160px; }
+    input, textarea{
+      width:100%;
+      background: rgba(15,23,48,.65);
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 12px;
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 110px; resize: vertical; }
+    input:focus, textarea:focus{ border-color: rgba(94,234,212,.55); box-shadow: 0 0 0 4px rgba(94,234,212,.10); }
+    .btn{
+      width:100%;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 14px;
+      font-weight: 650;
+      letter-spacing: .2px;
+      cursor:pointer;
+    }
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(94,234,212,.95), rgba(56,189,248,.85));
+      border-color: transparent;
+      color:#041018;
+    }
+    .btnDanger{
+      background: rgba(251,113,133,.10);
+      border-color: rgba(251,113,133,.25);
+      color: #FFD7DE;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .hint{ font-size:12px; color: var(--muted); margin-top:10px; }
+
+    .toolbar{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(11,18,32,.82);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      display:flex; gap:10px;
+      z-index: 20;
+    }
+    .toolbar button{ flex:1; }
+
+    .entry{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .entryMeta{ font-size:12px; color: var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+    .pill{
+      padding:4px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-size:12px;
+    }
+    .entryText{ margin-top:8px; white-space: pre-wrap; font-size:14px; line-height:1.35; }
+
+    .smallBtn{
+      width:auto;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color: var(--text);
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .empty{ color: var(--muted); font-size: 13px; padding: 4px 2px; }
   </style>
 </head>
 <body>
-  <h1>Parkinson’s Tracker (Offline)</h1>
-  <div class="muted">Saved on this device. Works offline. No server.</div>
 
-  <div class="card">
-    <div class="row">
-      <input id="date" type="datetime-local" />
-      <input id="tag" placeholder="Tag (e.g., meds / meal / symptoms)" />
-    </div>
-    <textarea id="note" rows="4" placeholder="What happened? (symptoms, food, meds timing, etc.)"></textarea>
-    <div class="row">
-      <button id="saveBtn">Save entry</button>
-      <button id="exportBtn">Export JSON</button>
-    </div>
-    <input id="importFile" type="file" accept="application/json" style="margin-top:10px" />
-    <div class="muted" style="margin-top:6px;">Tip: Export regularly so you can backup/move phones.</div>
-  </div>
-
-  <div class="card">
-    <div class="row">
-      <input id="search" placeholder="Search..." />
-      <button id="clearBtn">Clear ALL data</button>
+  <div class="topbar">
+    <div class="title">
+      <h1>Parkinson’s Tracker</h1>
+      <div class="badge">Offline • On device</div>
     </div>
   </div>
 
-  <div id="list"></div>
+  <div class="grid">
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="label">Date & time</div>
+          <input id="date" type="datetime-local" />
+        </div>
+        <div>
+          <div class="label">Tag</div>
+          <input id="tag" placeholder="meds / meal / symptoms" />
+        </div>
+      </div>
+
+      <div class="label" style="margin-top:10px;">Notes</div>
+      <textarea id="note" placeholder="What happened? symptoms, food, meds timing, etc."></textarea>
+
+      <div class="hint">Tip: Export occasionally as a backup.</div>
+      <input id="importFile" type="file" accept="application/json" style="margin-top:10px" />
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="label">Search</div>
+          <input id="search" placeholder="Search entries..." />
+        </div>
+        <div style="min-width:170px; align-self:end;">
+          <button class="btn btnDanger" id="clearBtn">Clear ALL data</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="list"></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btnPrimary" id="saveBtn">Save</button>
+    <button class="btn" id="exportBtn">Export</button>
+  </div>
 
   <script src="app.js"></script>
 </body>
