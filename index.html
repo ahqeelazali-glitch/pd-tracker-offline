@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parkinson’s Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111" />
+  <style>
+    body { font-family: system-ui, Arial; margin: 16px; background: #0b0b0b; color: #f2f2f2; }
+    .card { background:#151515; border:1px solid #2a2a2a; border-radius:14px; padding:14px; margin:12px 0; }
+    input, textarea, button { width:100%; padding:12px; border-radius:12px; border:1px solid #333; background:#0f0f0f; color:#f2f2f2; }
+    button { cursor:pointer; background:#1f1f1f; }
+    button:hover { background:#2a2a2a; }
+    .row { display:flex; gap:10px; }
+    .row > * { flex:1; }
+    .muted { color:#b8b8b8; font-size: 12px; }
+    .entry { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .entry button { width:auto; padding:10px 12px; }
+    .pill { display:inline-block; padding:4px 10px; border:1px solid #333; border-radius:999px; font-size:12px; color:#d9d9d9; }
+  </style>
+</head>
+<body>
+  <h1>Parkinson’s Tracker (Offline)</h1>
+  <div class="muted">Saved on this device. Works offline. No server.</div>
+
+  <div class="card">
+    <div class="row">
+      <input id="date" type="datetime-local" />
+      <input id="tag" placeholder="Tag (e.g., meds / meal / symptoms)" />
+    </div>
+    <textarea id="note" rows="4" placeholder="What happened? (symptoms, food, meds timing, etc.)"></textarea>
+    <div class="row">
+      <button id="saveBtn">Save entry</button>
+      <button id="exportBtn">Export JSON</button>
+    </div>
+    <input id="importFile" type="file" accept="application/json" style="margin-top:10px" />
+    <div class="muted" style="margin-top:6px;">Tip: Export regularly so you can backup/move phones.</div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <input id="search" placeholder="Search..." />
+      <button id="clearBtn">Clear ALL data</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
