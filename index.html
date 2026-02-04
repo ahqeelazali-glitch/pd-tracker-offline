@@ -1,25 +1,22 @@
+
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
   <title>Parkinson’s Tracker</title>
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0B1220" />
-
-  <!-- iOS niceties (safe even on Android) -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root{
       --bg:#0B1220;
-      --card:#111A2E;
-      --card2:#0F1730;
-      --line:rgba(255,255,255,.10);
+      --panel: rgba(255,255,255,.04);
+      --card: rgba(255,255,255,.06);
+      --line: rgba(255,255,255,.10);
       --text:#EAF0FF;
-      --muted:rgba(234,240,255,.70);
+      --muted: rgba(234,240,255,.70);
       --accent:#5EEAD4;
       --danger:#FB7185;
       --shadow: 0 18px 50px rgba(0,0,0,.35);
@@ -29,47 +26,67 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 20% -10%, rgba(94,234,212,.18), transparent 55%),
-                  radial-gradient(900px 700px at 100% 0%, rgba(56,189,248,.12), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(94,234,212,.18), transparent 55%),
+        radial-gradient(900px 700px at 100% 0%, rgba(56,189,248,.12), transparent 55%),
+        var(--bg);
       color:var(--text);
-      padding: 18px 16px 90px;
+      padding: 16px 14px 92px;
     }
+
     .topbar{
-      position: sticky;
-      top: 0;
-      padding: 12px 0 12px;
+      position: sticky; top: 0; z-index: 10;
+      padding: 12px 0 10px;
       backdrop-filter: blur(12px);
       background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.65), transparent);
-      z-index: 10;
     }
-    .title{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    .title h1{
-      margin:0;
-      font-size: 22px;
-      letter-spacing: .2px;
-    }
+    .titleRow{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1{ margin:0; font-size:20px; letter-spacing:.2px; }
     .badge{
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line);
       color: var(--muted);
       background: rgba(255,255,255,.04);
+      white-space: nowrap;
     }
-    .grid{ display:grid; gap:14px; }
+
+    .tabsHead{
+      display:flex; gap:10px; margin-top:10px;
+      padding: 6px;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      overflow:auto;
+    }
+    .chip{
+      border:1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .chip.active{
+      color: var(--text);
+      background: rgba(94,234,212,.12);
+      border-color: rgba(94,234,212,.25);
+    }
+
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      background: var(--card);
       border:1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
       padding: 14px;
+      margin-top: 14px;
     }
+
     .label{ font-size:12px; color: var(--muted); margin: 4px 0 8px; }
     .row{ display:flex; gap:10px; flex-wrap:wrap; }
-    .row > *{ flex:1 1 160px; }
+    .row > *{ flex:1 1 150px; }
+
     input, textarea{
       width:100%;
       background: rgba(15,23,48,.65);
@@ -81,7 +98,11 @@
       font-size: 14px;
     }
     textarea{ min-height: 110px; resize: vertical; }
-    input:focus, textarea:focus{ border-color: rgba(94,234,212,.55); box-shadow: 0 0 0 4px rgba(94,234,212,.10); }
+    input:focus, textarea:focus{
+      border-color: rgba(94,234,212,.55);
+      box-shadow: 0 0 0 4px rgba(94,234,212,.10);
+    }
+
     .btn{
       width:100%;
       border:1px solid var(--line);
@@ -89,7 +110,7 @@
       color: var(--text);
       padding: 12px 12px;
       border-radius: 14px;
-      font-weight: 650;
+      font-weight: 750;
       letter-spacing: .2px;
       cursor:pointer;
     }
@@ -103,26 +124,18 @@
       border-color: rgba(251,113,133,.25);
       color: #FFD7DE;
     }
-    .btn:active{ transform: translateY(1px); }
+
     .hint{ font-size:12px; color: var(--muted); margin-top:10px; }
 
-    .toolbar{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(11,18,32,.82);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--line);
-      display:flex; gap:10px;
-      z-index: 20;
-    }
-    .toolbar button{ flex:1; }
+    .section{ display:none; }
+    .section.active{ display:block; }
 
     .entry{
       display:flex;
-      gap: 12px;
+      gap:12px;
       align-items:flex-start;
       justify-content:space-between;
+      margin-top: 12px;
     }
     .entryMeta{ font-size:12px; color: var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
     .pill{
@@ -133,7 +146,6 @@
       font-size:12px;
     }
     .entryText{ margin-top:8px; white-space: pre-wrap; font-size:14px; line-height:1.35; }
-
     .smallBtn{
       width:auto;
       padding: 10px 12px;
@@ -145,18 +157,54 @@
       white-space:nowrap;
     }
     .empty{ color: var(--muted); font-size: 13px; padding: 4px 2px; }
+
+    .bottomTabs{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(11,18,32,.86);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      display:flex; gap:10px;
+      z-index: 20;
+    }
+    .tabBtn{
+      flex:1;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      padding: 10px 10px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor:pointer;
+    }
+    .tabBtn.active{
+      color: var(--text);
+      border-color: rgba(94,234,212,.25);
+      background: rgba(94,234,212,.10);
+    }
   </style>
 </head>
-<body>
 
+<body>
   <div class="topbar">
-    <div class="title">
+    <div class="titleRow">
       <h1>Parkinson’s Tracker</h1>
       <div class="badge">Offline • On device</div>
     </div>
+
+    <!-- optional “top chips” (nice for quick jump) -->
+    <div class="tabsHead" aria-label="Quick tabs">
+      <button class="chip active" data-tab="log">➕ Log</button>
+      <button class="chip" data-tab="journal">📓 Journal</button>
+      <button class="chip" data-tab="search">🔎 Search</button>
+      <button class="chip" data-tab="trends">📊 Trends</button>
+      <button class="chip" data-tab="settings">⚙️ Settings</button>
+    </div>
   </div>
 
-  <div class="grid">
+  <!-- LOG -->
+  <section id="tab-log" class="section active">
     <div class="card">
       <div class="row">
         <div>
@@ -172,30 +220,76 @@
       <div class="label" style="margin-top:10px;">Notes</div>
       <textarea id="note" placeholder="What happened? symptoms, food, meds timing, etc."></textarea>
 
-      <div class="hint">Tip: Export occasionally as a backup.</div>
-      <input id="importFile" type="file" accept="application/json" style="margin-top:10px" />
+      <div class="hint">Tip: Keep tags consistent (e.g. meds, meal, symptoms, sleep).</div>
+      <button class="btn btnPrimary" id="saveBtn" style="margin-top:12px;">Save entry</button>
     </div>
+  </section>
 
+  <!-- JOURNAL -->
+  <section id="tab-journal" class="section">
     <div class="card">
-      <div class="row">
-        <div>
-          <div class="label">Search</div>
-          <input id="search" placeholder="Search entries..." />
-        </div>
-        <div style="min-width:170px; align-self:end;">
-          <button class="btn btnDanger" id="clearBtn">Clear ALL data</button>
-        </div>
-      </div>
+      <div class="label">Latest entries</div>
+      <div id="journalList"></div>
     </div>
+  </section>
 
-    <div id="list"></div>
-  </div>
+  <!-- SEARCH -->
+  <section id="tab-search" class="section">
+    <div class="card">
+      <div class="label">Search</div>
+      <input id="search" placeholder="Search entries..." />
+      <div id="searchList" style="margin-top:8px;"></div>
+    </div>
+  </section>
 
-  <div class="toolbar">
-    <button class="btn btnPrimary" id="saveBtn">Save</button>
-    <button class="btn" id="exportBtn">Export</button>
-  </div>
+  <!-- TRENDS (placeholder) -->
+  <section id="tab-trends" class="section">
+    <div class="card">
+      <div class="label">Trends</div>
+      <div class="empty">Next: charts for meds timing, symptoms frequency, sleep, triggers.</div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" class="section">
+    <div class="card">
+      <div class="label">Backup</div>
+      <button class="btn" id="exportBtn">Export JSON</button>
+      <div class="hint">Import a previous backup file:</div>
+      <input id="importFile" type="file" accept="application/json" />
+
+      <div class="label" style="margin-top:14px;">Danger zone</div>
+      <button class="btn btnDanger" id="clearBtn">Clear ALL data</button>
+    </div>
+  </section>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="bottomTabs" aria-label="Bottom navigation">
+    <button class="tabBtn active" data-tab="log">➕ Log</button>
+    <button class="tabBtn" data-tab="journal">📓 Journal</button>
+    <button class="tabBtn" data-tab="search">🔎 Search</button>
+    <button class="tabBtn" data-tab="trends">📊</button>
+    <button class="tabBtn" data-tab="settings">⚙️</button>
+  </nav>
 
   <script src="app.js"></script>
+
+  <script>
+    // Tab switching (top chips + bottom tabs)
+    function setTab(name){
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById("tab-" + name).classList.add("active");
+
+      document.querySelectorAll(".tabBtn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+      document.querySelectorAll(".chip").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+
+      // after switching, refresh lists
+      if (window.renderAll) window.renderAll();
+    }
+
+    document.querySelectorAll("[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => setTab(btn.dataset.tab));
+    });
+  </script>
 </body>
 </html>
