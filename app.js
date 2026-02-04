@@ -94,6 +94,38 @@ async function render() {
     );
   }
 
+  els.list.innerHTML = entries.length ? entries.map(e => `
+    <div class="card entry">
+      <div style="flex:1;">
+        <div class="entryMeta">
+          <span>${escapeHtml(fmt(e.ts))}</span>
+          ${e.tag ? `<span class="pill">${escapeHtml(e.tag)}</span>` : ""}
+        </div>
+        <div class="entryText">${escapeHtml(e.text)}</div>
+      </div>
+      <button class="smallBtn" data-del="${escapeHtml(e.id)}">Delete</button>
+    </div>
+  `).join("") : `<div class="empty">No entries yet.</div>`;
+
+  document.querySelectorAll("button[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      await deleteEntry(btn.getAttribute("data-del"));
+      await render();
+    });
+  });
+}
+
+  const q = (els.search.value || "").trim().toLowerCase();
+  let entries = await getAllEntries();
+  entries.sort((a,b) => b.ts - a.ts);
+
+  if (q) {
+    entries = entries.filter(e =>
+      (e.tag || "").toLowerCase().includes(q) ||
+      (e.text || "").toLowerCase().includes(q)
+    );
+  }
+
   els.list.innerHTML = entries.map(e => `
     <div class="card entry">
       <div style="flex:1;">
@@ -177,3 +209,5 @@ els.importFile.addEventListener("change", async (e) => {
     catch (e) { console.warn("SW register failed", e); }
   }
 })();
+
+
